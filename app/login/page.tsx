@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AuthCard } from "@/components/auth-card";
 import { LoginForm } from "@/components/login-form";
 
@@ -10,7 +11,9 @@ export default function LoginPage() {
       footerLinkHref="/signup"
       footerLinkLabel="Create one"
     >
-      <LoginForm />
+      <Suspense fallback={<div className="text-sm text-gray-500">Loading...</div>}>
+        <LoginForm />
+      </Suspense>
     </AuthCard>
   );
 }
