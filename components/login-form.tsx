@@ -1,14 +1,14 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
 import { getSafeCallbackPath } from "@/lib/auth-redirect";
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = getSafeCallbackPath(searchParams.get("callbackUrl"));
+  const authError = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,26 +27,20 @@ export function LoginForm() {
     setIsPending(true);
 
     try {
-      const result = await signIn("credentials", {
+      await signIn("credentials", {
         email: email.trim(),
         password,
-        redirect: false,
         callbackUrl,
       });
-
-      if (!result || result.error) {
-        setError("We couldn't sign you in with that email and password.");
-        return;
-      }
-
-      router.replace(result.url || callbackUrl);
-      router.refresh();
     } catch {
-      setError("Sign in is unavailable right now. Please try again.");
-    } finally {
       setIsPending(false);
+      setError("Sign in is unavailable right now. Please try again.");
     }
   }
+
+  const message =
+    error ||
+    (authError ? "We couldn't sign you in with that email and password." : "");
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -85,13 +79,13 @@ export function LoginForm() {
         />
       </div>
 
-      {error ? (
+      {message ? (
         <p
           role="alert"
           aria-live="polite"
           className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
         >
-          {error}
+          {message}
         </p>
       ) : null}
 
